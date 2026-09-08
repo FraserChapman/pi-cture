@@ -1,0 +1,22 @@
+[Unit]
+Description=Photo Frame Kiosk
+Conflicts=getty@tty1.service
+After=systemd-logind.service systemd-user-sessions.service plymouth-quit-wait.service
+
+[Service]
+User=CURRENT_USER
+PAMName=login
+Environment="XDG_RUNTIME_DIR=/run/user/CURRENT_UID"
+Environment="WLR_LIBINPUT_NO_DEVICES=1"
+Environment="PICTURE_PORT=PICTURE_PORT_VALUE"
+StandardInput=tty
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+ExecStartPre=/bin/sh -c 'for i in $(seq 1 30); do if [ -e /dev/dri/card0 ] || [ -e /dev/dri/card1 ]; then exit 0; fi; sleep 1; done; exit 1'
+ExecStart=/usr/bin/cage -d -s -- /usr/bin/python3 -u APP_DIR/src/script.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
