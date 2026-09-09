@@ -1,10 +1,10 @@
 # pi·cture
 
-A self-hosted digital photo frame for the Raspberry Pi. Built with Pygame and optimized to run natively on the DRM/KMS console via Wayland (`cage`)— meaning it boots quickly and runs smooth without the overhead of a full desktop environment.
+A self-hosted digital photo frame for the Raspberry Pi. Built with Pygame and optimized to run natively on the DRM/KMS console via Wayland (`cage`) - meaning it boots quickly and runs smooth without the overhead of a full desktop environment.
 
 ## Prerequisites
 
-1. A Raspberry Pi running Raspberry Pi OS Lite (e.g. `2026-06-18-raspios-trixie-arm64-lite`).
+1. A Raspberry Pi running Raspberry [Pi OS Lite](https://www.raspberrypi.com/software/operating-systems/) (e.g. `2026-06-18-raspios-trixie-arm64-lite`).
 2. A supported screen (e.g., the Official Raspberry Pi 7-inch Touchscreen).
 
 ## Installation
@@ -12,7 +12,7 @@ A self-hosted digital photo frame for the Raspberry Pi. Built with Pygame and op
 An automated installation script is provided which will install the necessary dependencies, configure the correct user paths, and set up the background systemd service.
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/FraserChapman/pi-cture
 cd pi·cture
 sudo ./install.sh
 ```
@@ -58,7 +58,7 @@ To access the dashboard:
 
 ## Remote Access (Global Uploads)
 
-If you chose to bundle Tailscale during installation:
+If you chose to bundle [Tailscale](https://tailscale.com/) during installation:
 
 1. Install the Tailscale app on your phone, laptop, or tablet and log in with your account.
-2. Thanks to Tailscale's MagicDNS, you don't even need to remember IP addresses. You can securely access the frame's web UI from anywhere in the world by simply navigating to `http://<hostname>:5000` (e.g. `http://piframe:5000`)!
+2. Thanks to Tailscale's [MagicDNS](https://tailscale.com/docs/features/magicdns), you don't even need to remember IP addresses. You can securely access the frame's web UI from anywhere in the world by simply navigating to `http://<hostname>:5000` (e.g. `http://piframe:5000`)!
