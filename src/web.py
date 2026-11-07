@@ -10,6 +10,8 @@ from functools import wraps
 flask_app = Flask(__name__)
 flask_app.secret_key = os.urandom(24)
 
+PORT = int(os.environ.get("PICTURE_PORT", 5000))
+
 LOGIN_HTML = """<!DOCTYPE html>
 <html>
 <head>
@@ -118,7 +120,7 @@ MAIN_HTML = """
                 try {
                     var triggers = JSON.parse(msg);
                     if (triggers.notify) {
-                        UIkit.notification({message: triggers.notify, status: 'success', pos: 'top-center', timeout: 3000});
+                        UIkit.notification({message: triggers.notify, status: 'success', pos: 'bottom-right', timeout: 3000});
                     }
                 } catch(e) {}
             }
@@ -214,7 +216,7 @@ def ui_tailscale():
             
             <hr class="uk-divider-small uk-margin-small">
             <p class="uk-margin-small-bottom">Secure global access URL:</p>
-            <p class="uk-margin-remove-top"><a href="http://{ts['hostname']}:5000" target="_blank"><strong>http://{ts['hostname']}:5000</strong></a></p>
+            <p class="uk-margin-remove-top"><a href="http://{ts['hostname']}:{PORT}" target="_blank"><strong>http://{ts['hostname']}:{PORT}</strong></a></p>
             
             {peers_html}
         </div>'''
@@ -603,7 +605,7 @@ def delete_folder_api(folder_name):
 def api_action():
     app_state.web_action = request.form.get('action')
     resp = make_response("")
-    resp.headers['HX-Trigger'] = json.dumps({"notify": "Action sent to display"})
+    resp.headers['HX-Trigger'] = json.dumps({"notify": f"{app_state.web_action} action sent to display"})
     return resp
 
 @flask_app.route('/api/upload', methods=['POST'])
@@ -664,4 +666,4 @@ def delete_image_file(folder, filename):
 def start_web_server(state):
     global app_state
     app_state = state
-    threading.Thread(target=lambda: flask_app.run(host='0.0.0.0', port=int(os.environ.get("PICTURE_PORT", 5000)), debug=False, use_reloader=False), daemon=True).start()
+    threading.Thread(target=lambda: flask_app.run(host='0.0.0.0', port=PORT, debug=False, use_reloader=False), daemon=True).start()
