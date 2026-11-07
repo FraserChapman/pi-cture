@@ -8,10 +8,26 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 base_dir = os.path.dirname(script_dir)
 settings_path = os.path.join(base_dir, "settings.json")
 galleries_dir = os.path.join(base_dir, "galleries")
+secret_key_path = os.path.join(base_dir, "secret_key")
 
 DURATIONS = (5, 10, 30, 60)
 TRANSITIONS = ("cut", "fade", "slide")
 IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg")
+
+def load_secret_key():
+    # Keep the session key across restarts so they don't log everyone out
+    try:
+        with open(secret_key_path, "rb") as f:
+            key = f.read()
+        if key:
+            return key
+    except FileNotFoundError:
+        pass
+    key = os.urandom(32)
+    fd = os.open(secret_key_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "wb") as f:
+        f.write(key)
+    return key
 
 class AppState:
     def __init__(self):

@@ -53,5 +53,15 @@ class SaveSettingsTestCase(unittest.TestCase):
         self.assertEqual(self.app_state.display_duration, 10)
         self.assertEqual(self.app_state.transition_type, "cut")
 
+class SecretKeyTestCase(unittest.TestCase):
+    def test_key_is_created_once_and_reused(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "secret_key")
+            with mock.patch.object(state, "secret_key_path", path):
+                key = state.load_secret_key()
+                self.assertEqual(len(key), 32)
+                self.assertEqual(os.stat(path).st_mode & 0o777, 0o600)
+                self.assertEqual(state.load_secret_key(), key)
+
 if __name__ == '__main__':
     unittest.main()

@@ -7,7 +7,7 @@ from flask import Flask, request, redirect, url_for, render_template_string, sen
 import werkzeug.utils
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-from state import DURATIONS, TRANSITIONS, IMAGE_EXTENSIONS
+from state import DURATIONS, TRANSITIONS, IMAGE_EXTENSIONS, load_secret_key
 
 flask_app = Flask(__name__)
 flask_app.secret_key = os.urandom(24)
@@ -695,4 +695,5 @@ def delete_image_file(folder, filename):
 def start_web_server(state):
     global app_state
     app_state = state
+    flask_app.secret_key = load_secret_key()
     threading.Thread(target=lambda: flask_app.run(host='0.0.0.0', port=PORT, debug=False, use_reloader=False), daemon=True).start()
