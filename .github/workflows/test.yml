@@ -1,0 +1,42 @@
+name: Test
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Lint and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Matches the Python shipped with Raspberry Pi OS trixie
+      - name: Setup Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+
+      # install.sh gets these from apt on the Pi; pygame isn't needed by the tests
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flask werkzeug flake8
+
+      # Fail on syntax errors and undefined names only
+      - name: Lint
+        run: flake8 src tests --count --select=E9,F63,F7,F82 --show-source --statistics
+
+      - name: Run tests
+        run: python -m unittest discover -s tests
