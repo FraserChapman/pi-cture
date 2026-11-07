@@ -91,6 +91,11 @@ MAIN_HTML = """
         </div>
     </nav>
     <div class="uk-container uk-margin-top uk-margin-bottom">
+        {% if default_password %}
+        <div class="uk-alert-warning" uk-alert>
+            <p>You're still using the default password. Change it in the Settings tab.</p>
+        </div>
+        {% endif %}
         <div class="uk-card uk-card-default uk-card-body">
             <ul uk-tab>
                 <li><a href="#">Gallery</a></li>
@@ -135,7 +140,7 @@ MAIN_HTML = """
 @flask_app.route('/')
 @login_required
 def index():
-    return MAIN_HTML
+    return render_template_string(MAIN_HTML, default_password=app_state.uses_default_password())
 
 
 def get_tailscale_status():

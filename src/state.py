@@ -1,4 +1,4 @@
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import json
 import time
@@ -13,6 +13,7 @@ secret_key_path = os.path.join(base_dir, "secret_key")
 DURATIONS = (5, 10, 30, 60)
 TRANSITIONS = ("cut", "fade", "slide")
 IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg")
+DEFAULT_PASSWORD = "admin"
 
 def load_secret_key():
     # Keep the session key across restarts so they don't log everyone out
@@ -35,7 +36,8 @@ class AppState:
         self.random_order = False
         self.current_folder = "images"
         self.transition_type = "cut"
-        self.web_password_hash = generate_password_hash("admin")
+        self.web_password_hash = generate_password_hash(DEFAULT_PASSWORD)
+        self._default_password_check = (None, False)
         
         self.available_folders = []
         self.images = []
@@ -69,9 +71,16 @@ class AppState:
                         else:
                             self.web_password_hash = generate_password_hash(loaded_pwd)
                     else:
-                        self.web_password_hash = generate_password_hash("admin")
+                        self.web_password_hash = generate_password_hash(DEFAULT_PASSWORD)
             except:
                 pass
+
+    def uses_default_password(self):
+        # Hash checks are slow on a Pi, so only re-check when the hash changes
+        if self._default_password_check[0] != self.web_password_hash:
+            is_default = check_password_hash(self.web_password_hash, DEFAULT_PASSWORD)
+            self._default_password_check = (self.web_password_hash, is_default)
+        return self._default_password_check[1]
 
     def save_settings(self):
         # Write to a temp file and swap it in, so a power cut mid-save

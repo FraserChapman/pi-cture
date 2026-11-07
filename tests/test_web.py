@@ -48,6 +48,19 @@ class WebUITestCase(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertIn(b'pi&middot;cture - Login', resp.data)
 
+    def test_default_password_warning(self):
+        self.login()
+        app_state = web.app_state
+        original = app_state.web_password_hash
+        try:
+            app_state.web_password_hash = web.generate_password_hash(state.DEFAULT_PASSWORD)
+            self.assertIn(b'still using the default password', self.client.get('/').data)
+
+            app_state.web_password_hash = web.generate_password_hash('something-else')
+            self.assertNotIn(b'still using the default password', self.client.get('/').data)
+        finally:
+            app_state.web_password_hash = original
+
     def test_protected_routes_redirect(self):
         # Without session, should redirect to login
         resp = self.client.get('/ui/settings')
