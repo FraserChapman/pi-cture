@@ -66,15 +66,10 @@ class AppState:
         for d in os.listdir(self.galleries_dir):
             full_path = os.path.join(self.galleries_dir, d)
             if os.path.isdir(full_path) and d != '__pycache__':
-                # Don't require images to list the folder, but it's cleaner to only list ones with images
-                # Wait, if we want to upload to an empty folder, we need it to exist.
-                # Let's just list folders that aren't hidden or pycache
-                if not d.startswith('.') and d != 'google_photos':
+                # ignore hidden
+                if not d.startswith('.'):
                     valid_folders.append(d)
-        
-        if 'google_photos' in os.listdir(self.galleries_dir):
-             valid_folders.append('google_photos')
-             
+
         if not valid_folders:
             valid_folders = ["images"]
             
