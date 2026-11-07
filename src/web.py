@@ -2,6 +2,7 @@ import os
 import json
 import shutil
 import threading
+from html import escape
 from flask import Flask, request, redirect, url_for, render_template_string, send_file, make_response, session
 import werkzeug.utils
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -199,10 +200,10 @@ def ui_tailscale():
                 elif 'ios' in os_name or 'mac' in os_name or 'darwin' in os_name: os_icon = 'apple'
                 elif 'linux' in os_name: os_icon = 'server'
                 
-                peers_html += f"<li>{status_icon} <span uk-icon='icon: {os_icon}; ratio: 0.8' class='uk-margin-small-right'></span> <strong>{p['hostname']}</strong> <span class='uk-text-muted uk-text-small'>({p['os']})</span></li>"
+                peers_html += f"<li>{status_icon} <span uk-icon='icon: {os_icon}; ratio: 0.8' class='uk-margin-small-right'></span> <strong>{escape(p['hostname'])}</strong> <span class='uk-text-muted uk-text-small'>({escape(p['os'])})</span></li>"
         peers_html += '</ul>'
         
-        profile_img = f'<img class="uk-border-circle uk-margin-small-right" width="40" height="40" src="{ts["profile_pic"]}">' if ts.get("profile_pic") else '<span uk-icon="icon: user; ratio: 1.5" class="uk-margin-small-right"></span>'
+        profile_img = f'<img class="uk-border-circle uk-margin-small-right" width="40" height="40" src="{escape(ts["profile_pic"])}">' if ts.get("profile_pic") else '<span uk-icon="icon: user; ratio: 1.5" class="uk-margin-small-right"></span>'
         
         return f'''
         <div uk-alert>
@@ -210,13 +211,13 @@ def ui_tailscale():
                 {profile_img}
                 <div>
                     <p class="uk-margin-remove"><strong><span uk-icon="check"></span> Tailscale Connected</strong></p>
-                    <p class="uk-text-small uk-text-muted uk-margin-remove">{ts.get('display_name')} ({ts['account']})</p>
+                    <p class="uk-text-small uk-text-muted uk-margin-remove">{escape(str(ts.get('display_name')))} ({escape(ts['account'])})</p>
                 </div>
             </div>
             
             <hr class="uk-divider-small uk-margin-small">
             <p class="uk-margin-small-bottom">Secure global access URL:</p>
-            <p class="uk-margin-remove-top"><a href="http://{ts['hostname']}:{PORT}" target="_blank"><strong>http://{ts['hostname']}:{PORT}</strong></a></p>
+            <p class="uk-margin-remove-top"><a href="http://{escape(ts['hostname'])}:{PORT}" target="_blank"><strong>http://{escape(ts['hostname'])}:{PORT}</strong></a></p>
             
             {peers_html}
         </div>'''
@@ -267,7 +268,7 @@ def ui_settings():
                         """
     for f in app_state.available_folders:
         selected = 'selected' if f == app_state.current_folder else ''
-        html += f'<option value="{f}" {selected}>{f}</option>'
+        html += f'<option value="{escape(f)}" {selected}>{escape(f)}</option>'
         
     html += f"""
                     </select>
@@ -349,7 +350,7 @@ def ui_gallery(selected_folder=None):
                         """
     for f in app_state.available_folders:
         selected = 'selected' if f == app_state.current_folder else ''
-        html += f'<option value="{f}" {selected}>{f}</option>'
+        html += f'<option value="{escape(f)}" {selected}>{escape(f)}</option>'
         
     html += f"""
                     </select>
@@ -390,7 +391,7 @@ def ui_gallery(selected_folder=None):
                     <span uk-icon="upload"></span> Upload Photos
                 </button>
             </div>
-            <input type="hidden" name="folder" id="upload-folder-input" value="{selected_folder}">
+            <input type="hidden" name="folder" id="upload-folder-input" value="{escape(selected_folder)}">
         </form>
     </div>
     
@@ -429,7 +430,7 @@ def ui_gallery(selected_folder=None):
         </div>
     </div>
 
-    <div id="gallery-grid" hx-get="/ui/gallery_grid?folder={selected_folder}&per_page=24" hx-trigger="load">
+    <div id="gallery-grid" hx-get="{escape(url_for('gallery_grid', folder=selected_folder, per_page=24))}" hx-trigger="load">
         <div class="uk-text-center uk-margin-large">
             <div uk-spinner="ratio: 2"></div>
         </div>
@@ -461,7 +462,7 @@ def gallery_grid():
     html = f"<h3 class='uk-margin-remove' id='gallery-photo-count' hx-swap-oob='true'>Photos ({total_images})</h3>"
     
     if not images:
-        return html + f"<div class='uk-alert'>No photos found in '{folder}'.</div>"
+        return html + f"<div class='uk-alert'>No photos found in '{escape(folder)}'.</div>"
 
     total_pages = (total_images - 1) // per_page + 1
     if page > total_pages:
@@ -473,16 +474,17 @@ def gallery_grid():
 
     html += '<div class="custom-gallery-grid">'
     for img in page_images:
+        img_url = escape(url_for('get_image_file', folder=folder, filename=img))
         html += f'''
         <div class="uk-card uk-card-default uk-card-small uk-inline uk-width-1-1">
-            <div class="uk-card-media-top thumb" onclick="openPreview('/api/image/{folder}/{img}')">
-                <img src="/api/image/{folder}/{img}" loading="lazy">
+            <div class="uk-card-media-top thumb" data-src="{img_url}" onclick="openPreview(this.dataset.src)">
+                <img src="{img_url}" loading="lazy">
             </div>
             <div class="uk-position-top-right uk-position-small">
                 <button class="uk-icon-button thumb-delete" 
                         uk-icon="trash"
-                        hx-delete="/api/image/{folder}/{img}" 
-                        hx-confirm="Delete {img}?" 
+                        hx-delete="{img_url}" 
+                        hx-confirm="Delete {escape(img)}?" 
                         hx-target="closest div.uk-card" 
                         hx-swap="outerHTML"
                         onclick="event.stopPropagation();"></button>
@@ -492,10 +494,13 @@ def gallery_grid():
     html += '</div>'
 
     if total_pages > 1:
+        def page_url(p):
+            return escape(url_for('gallery_grid', folder=folder, per_page=per_page, page=p))
+
         html += '<nav aria-label="Pagination" class="uk-margin-large-top"><ul class="uk-pagination uk-flex-center" uk-margin>'
         
         if page > 1:
-            html += f'<li><a hx-get="/ui/gallery_grid?folder={folder}&per_page={per_page}&page={page-1}" hx-target="#gallery-grid"><span uk-pagination-previous></span></a></li>'
+            html += f'<li><a hx-get="{page_url(page - 1)}" hx-target="#gallery-grid"><span uk-pagination-previous></span></a></li>'
         else:
             html += '<li class="uk-disabled"><span><span uk-pagination-previous></span></span></li>'
             
@@ -528,10 +533,10 @@ def gallery_grid():
             elif p == page:
                 html += f'<li class="uk-active"><span aria-current="page">{p}</span></li>'
             else:
-                html += f'<li><a hx-get="/ui/gallery_grid?folder={folder}&per_page={per_page}&page={p}" hx-target="#gallery-grid">{p}</a></li>'
+                html += f'<li><a hx-get="{page_url(p)}" hx-target="#gallery-grid">{p}</a></li>'
                 
         if page < total_pages:
-            html += f'<li><a hx-get="/ui/gallery_grid?folder={folder}&per_page={per_page}&page={page+1}" hx-target="#gallery-grid"><span uk-pagination-next></span></a></li>'
+            html += f'<li><a hx-get="{page_url(page + 1)}" hx-target="#gallery-grid"><span uk-pagination-next></span></a></li>'
         else:
             html += '<li class="uk-disabled"><span><span uk-pagination-next></span></span></li>'
             
