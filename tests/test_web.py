@@ -96,6 +96,15 @@ class WebUITestCase(unittest.TestCase):
             self.assertIn(b'/api/image/Mum%20&amp;%20Dad%20%231/a.jpg', grid.data)
             self.assertEqual(self.client.get('/api/image/Mum%20&%20Dad%20%231/a.jpg').status_code, 200)
 
+    def test_new_gallery_is_selected_after_creation(self):
+        self.login()
+        with self.temp_galleries():
+            html = self.client.post('/api/create_folder', data={'new_folder': 'holiday'}).get_data(as_text=True)
+
+            self.assertIn('<option value="holiday" selected>', html)
+            self.assertIn('id="upload-folder-input" value="holiday"', html)
+            self.assertEqual(web.app_state.current_folder, 'images')
+
     def test_filenames_are_escaped_in_grid(self):
         self.login()
         with self.temp_galleries() as tmp:

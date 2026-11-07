@@ -335,7 +335,7 @@ def ui_controls():
 def ui_gallery(selected_folder=None):
     if selected_folder is None or selected_folder not in app_state.available_folders:
         selected_folder = app_state.current_folder
-    d = os.path.join(app_state.galleries_dir, app_state.current_folder)
+    d = os.path.join(app_state.galleries_dir, selected_folder)
     count = 0
     if os.path.exists(d):
         count = len([f for f in os.listdir(d) if f.lower().endswith(('.png', '.jpg', '.jpeg'))])
@@ -349,7 +349,7 @@ def ui_gallery(selected_folder=None):
                     <select class="uk-select uk-margin-small-right" id="folder-select" name="folder">
                         """
     for f in app_state.available_folders:
-        selected = 'selected' if f == app_state.current_folder else ''
+        selected = 'selected' if f == selected_folder else ''
         html += f'<option value="{escape(f)}" {selected}>{escape(f)}</option>'
         
     html += f"""
