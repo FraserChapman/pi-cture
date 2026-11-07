@@ -1,5 +1,7 @@
+import io
 import sys
 import os
+import tempfile
 import unittest
 
 # Add src to python path so we can import our modules
@@ -43,6 +45,29 @@ class WebUITestCase(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         # It should either say Connected, Needs Login, or Not Installed
         self.assertTrue(b'Tailscale Connected' in resp.data or b'Needs Login' in resp.data or b'Not Installed' in resp.data)
+
+    def test_upload_saves_multiple_files(self):
+        with self.client.session_transaction() as sess:
+            sess['authenticated'] = True
+
+        app_state = web.app_state
+        original_dir = app_state.galleries_dir
+        original_action = app_state.web_action
+        with tempfile.TemporaryDirectory() as tmp:
+            app_state.galleries_dir = tmp
+            folder = app_state.available_folders[0]
+            try:
+                resp = self.client.post('/api/upload', data={
+                    'folder': folder,
+                    'file': [(io.BytesIO(b'one'), 'one.jpg'), (io.BytesIO(b'two'), 'two.jpg')],
+                }, content_type='multipart/form-data')
+            finally:
+                app_state.galleries_dir = original_dir
+                app_state.web_action = original_action
+                app_state.refresh_images()
+
+            self.assertEqual(resp.status_code, 302)
+            self.assertEqual(sorted(os.listdir(os.path.join(tmp, folder))), ['one.jpg', 'two.jpg'])
 
 if __name__ == '__main__':
     unittest.main()

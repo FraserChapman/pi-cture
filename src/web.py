@@ -383,9 +383,9 @@ def ui_gallery(selected_folder=None):
         <h3 class="uk-margin-remove" id="gallery-photo-count">Photos ({count})</h3>
         <form hx-post="/api/upload" hx-encoding="multipart/form-data" hx-target="#gallery-grid" hx-swap="innerHTML">
             <div uk-form-custom>
-                <input type="file" name="file" accept=".jpg,.jpeg,.png" required onchange="this.closest('form').dispatchEvent(new Event('submit', {{cancelable: true}}))">
+                <input type="file" name="file" accept=".jpg,.jpeg,.png" multiple required onchange="this.closest('form').dispatchEvent(new Event('submit', {{cancelable: true}}))">
                 <button class="uk-button uk-button-primary" type="button" tabindex="-1">
-                    <span uk-icon="upload"></span> Upload Photo
+                    <span uk-icon="upload"></span> Upload Photos
                 </button>
             </div>
             <input type="hidden" name="folder" id="upload-folder-input" value="{selected_folder}">
@@ -613,18 +613,19 @@ def upload_file_api():
     if folder not in app_state.available_folders:
         return "Invalid folder", 400
         
-    if 'file' not in request.files:
+    files = [f for f in request.files.getlist('file') if f and f.filename]
+    if not files:
         return "No file", 400
-    file = request.files['file']
-    if file and file.filename:
+
+    target_dir = os.path.join(app_state.galleries_dir, folder)
+    os.makedirs(target_dir, exist_ok=True)
+    for file in files:
         filename = werkzeug.utils.secure_filename(file.filename)
-        target_dir = os.path.join(app_state.galleries_dir, folder)
-        os.makedirs(target_dir, exist_ok=True)
         file.save(os.path.join(target_dir, filename))
-        
-        if app_state.current_folder == folder:
-            app_state.refresh_images()
-            app_state.web_action = 'reload'
+
+    if app_state.current_folder == folder:
+        app_state.refresh_images()
+        app_state.web_action = 'reload'
             
     return redirect(url_for('gallery_grid', folder=folder))
 
