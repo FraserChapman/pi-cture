@@ -17,7 +17,7 @@ try:
     os.environ["SDL_VIDEODRIVER"] = "wayland"
     os.environ["SDL_KMSDRM_DEVICE_INDEX"] = "0"
 
-    import os; log_error(f"ENV: {os.environ.get("WAYLAND_DISPLAY")}"); time.sleep(2) # Give cage time to initialize outputs
+    import os; log_error(f"ENV: {os.environ.get('WAYLAND_DISPLAY')}"); time.sleep(2) # Give cage time to initialize outputs
     pygame.init()
     pygame.font.init()
     font = pygame.font.SysFont(None, 40)
