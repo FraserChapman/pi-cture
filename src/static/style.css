@@ -1,0 +1,50 @@
+html { scrollbar-gutter: stable; }
+body { background: #f8f9fa; }
+:root { --thumb-size: 200px; }
+
+.logo-dot { color: red; }
+
+/* Login */
+.login-page { height: 100vh; }
+.login-card { width: 350px; }
+
+/* Main */
+.uk-navbar-container { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+.status-online { color: green; }
+.status-offline { color: gray; }
+
+.control-button { height: 100px; }
+
+.per-page-select { max-width: 150px; }
+
+.preview-img {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+    background: black;
+}
+
+/* Gallery */
+.custom-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--thumb-size), 1fr));
+    gap: 15px;
+}
+.thumb {
+    aspect-ratio: 4/3;
+    background: #222;
+    cursor: pointer;
+}
+.thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+/* Beats UIkit's :hover/:active rules, as the old inline style did */
+.uk-icon-button.thumb-delete,
+.uk-icon-button.thumb-delete:hover,
+.uk-icon-button.thumb-delete:active {
+    background: rgba(255,255,255,0.8);
+    color: red;
+}

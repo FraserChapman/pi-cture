@@ -16,14 +16,13 @@ LOGIN_HTML = """<!DOCTYPE html>
     <title>pi&middot;cture - Login</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/static/uikit.min.css" />
+    <link rel="stylesheet" href="/static/style.css" />
     <script src="/static/uikit.min.js"></script>
     <script src="/static/uikit-icons.min.js"></script>
-    <style>html { scrollbar-gutter: stable; }
-        body { background: #f8f9fa; }</style>
 </head>
-<body class="uk-flex uk-flex-middle uk-flex-center" style="height: 100vh;">
-    <div class="uk-card uk-card-default uk-card-body" style="width: 350px;">
-        <h3 class="uk-card-title uk-text-center"><span>pi<span style="color: red;">&middot;</span>cture</span></h3>
+<body class="uk-flex uk-flex-middle uk-flex-center login-page">
+    <div class="uk-card uk-card-default uk-card-body login-card">
+        <h3 class="uk-card-title uk-text-center"><span>pi<span class="logo-dot">&middot;</span>cture</span></h3>
         {% if error %}
         <div class="uk-alert-danger" uk-alert><p>{{ error }}</p></div>
         {% endif %}
@@ -76,25 +75,15 @@ MAIN_HTML = """
     <title>pi&middot;cture</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/static/uikit.min.css" />
+    <link rel="stylesheet" href="/static/style.css" />
     <script src="/static/uikit.min.js"></script>
     <script src="/static/uikit-icons.min.js"></script>
     <script src="/static/htmx.min.js"></script>
-    <style>
-        html { scrollbar-gutter: stable; }
-        body { background: #f8f9fa; }
-        .uk-navbar-container { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        :root { --thumb-size: 200px; }
-        .custom-gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(var(--thumb-size), 1fr));
-            gap: 15px;
-        }
-    </style>
 </head>
 <body>
     <nav class="uk-navbar-container" uk-navbar>
         <div class="uk-navbar-center">
-            <span class="uk-navbar-item uk-logo"><span>pi<span style="color: red;">&middot;</span>cture</span></span>
+            <span class="uk-navbar-item uk-logo"><span>pi<span class="logo-dot">&middot;</span>cture</span></span>
         </div>
     </nav>
     <div class="uk-container uk-margin-top uk-margin-bottom">
@@ -201,7 +190,7 @@ def ui_tailscale():
             peers_html += '<li>No other devices found.</li>'
         else:
             for p in ts['peers']:
-                status_icon = '<span uk-icon="icon: check; ratio: 0.8" style="color: green;" uk-tooltip="Online"></span>' if p['online'] else '<span uk-icon="icon: close; ratio: 0.8" style="color: gray;" uk-tooltip="Offline"></span>'
+                status_icon = '<span uk-icon="icon: check; ratio: 0.8" class="status-online" uk-tooltip="Online"></span>' if p['online'] else '<span uk-icon="icon: close; ratio: 0.8" class="status-offline" uk-tooltip="Offline"></span>'
                 os_name = p['os'].lower()
                 os_icon = "desktop"
                 if 'android' in os_name: os_icon = 'android-robot'
@@ -321,17 +310,17 @@ def ui_controls():
     return """
     <div class="uk-grid-small uk-child-width-1-3@s uk-text-center" uk-grid>
         <div>
-            <button class="uk-button uk-button-default uk-width-1-1" style="height: 100px;" hx-post="/api/action" hx-vals='{"action": "prev"}' hx-swap="none">
+            <button class="uk-button uk-button-default uk-width-1-1 control-button" hx-post="/api/action" hx-vals='{"action": "prev"}' hx-swap="none">
                 <span uk-icon="icon: chevron-left; ratio: 2"></span><br>Previous
             </button>
         </div>
         <div>
-            <button class="uk-button uk-button-default uk-width-1-1" style="height: 100px;" hx-post="/api/action" hx-vals='{"action": "reload"}' hx-swap="none">
+            <button class="uk-button uk-button-default uk-width-1-1 control-button" hx-post="/api/action" hx-vals='{"action": "reload"}' hx-swap="none">
                 <span uk-icon="icon: refresh; ratio: 2"></span><br>Reload
             </button>
         </div>
         <div>
-            <button class="uk-button uk-button-default uk-width-1-1" style="height: 100px;" hx-post="/api/action" hx-vals='{"action": "next"}' hx-swap="none">
+            <button class="uk-button uk-button-default uk-width-1-1 control-button" hx-post="/api/action" hx-vals='{"action": "next"}' hx-swap="none">
                 <span uk-icon="icon: chevron-right; ratio: 2"></span><br>Next
             </button>
         </div>
@@ -365,7 +354,7 @@ def ui_gallery(selected_folder=None):
                     <button type="button" class="uk-button uk-button-danger" onclick="deleteSelectedGallery()" uk-tooltip="Delete Gallery" uk-icon="trash"></button>
                 </div>
                 <div class="uk-flex uk-flex-middle">
-                    <select class="uk-select uk-margin-small-right" name="per_page" style="max-width: 150px;">
+                    <select class="uk-select uk-margin-small-right per-page-select" name="per_page">
                         <option value="12">12 per page</option>
                         <option value="24" selected>24 per page</option>
                         <option value="48">48 per page</option>
@@ -434,7 +423,7 @@ def ui_gallery(selected_folder=None):
     <div id="modal-media-image" class="uk-flex-top" uk-modal>
         <div class="uk-modal-dialog uk-width-auto uk-margin-auto-vertical">
             <button class="uk-modal-close-outside" type="button" uk-close></button>
-            <img id="modal-preview-img" src="" alt="Preview" style="max-width: 90vw; max-height: 90vh; object-fit: contain; background: black;">
+            <img id="modal-preview-img" src="" alt="Preview" class="preview-img">
         </div>
     </div>
 
@@ -483,12 +472,12 @@ def gallery_grid():
     html += '<div class="custom-gallery-grid">'
     for img in page_images:
         html += f'''
-        <div class="uk-card uk-card-default uk-card-small uk-inline" style="width: 100%;">
-            <div class="uk-card-media-top" style="aspect-ratio: 4/3; background: #222; cursor: pointer;" onclick="openPreview('/api/image/{folder}/{img}')">
-                <img src="/api/image/{folder}/{img}" style="width: 100%; height: 100%; object-fit: contain;" loading="lazy">
+        <div class="uk-card uk-card-default uk-card-small uk-inline uk-width-1-1">
+            <div class="uk-card-media-top thumb" onclick="openPreview('/api/image/{folder}/{img}')">
+                <img src="/api/image/{folder}/{img}" loading="lazy">
             </div>
             <div class="uk-position-top-right uk-position-small">
-                <button class="uk-icon-button" style="background: rgba(255,255,255,0.8); color: red;" 
+                <button class="uk-icon-button thumb-delete" 
                         uk-icon="trash"
                         hx-delete="/api/image/{folder}/{img}" 
                         hx-confirm="Delete {img}?" 
