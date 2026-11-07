@@ -81,6 +81,22 @@ class WebUITestCase(unittest.TestCase):
             self.assertEqual(resp.status_code, 302)
             self.assertEqual(sorted(os.listdir(os.path.join(tmp, 'images'))), ['one.jpg', 'two.jpg'])
 
+    def test_upload_keeps_extension_and_never_overwrites(self):
+        self.login()
+        with self.temp_galleries() as tmp:
+            for _ in range(2):
+                self.client.post('/api/upload', data={
+                    'folder': 'images',
+                    'file': [
+                        (io.BytesIO(b'a'), '写真.JPG'),
+                        (io.BytesIO(b'b'), 'image.jpg'),
+                        (io.BytesIO(b'c'), 'notes.txt'),
+                    ],
+                }, content_type='multipart/form-data')
+
+            self.assertEqual(sorted(os.listdir(os.path.join(tmp, 'images'))),
+                             ['image.jpg', 'image_1.jpg', 'photo.jpg', 'photo_1.jpg'])
+
     def test_gallery_with_special_characters_loads(self):
         self.login()
         with self.temp_galleries() as tmp:

@@ -613,6 +613,21 @@ def api_action():
     resp.headers['HX-Trigger'] = json.dumps({"notify": f"{app_state.web_action} action sent to display"})
     return resp
 
+UPLOAD_EXTENSIONS = ('.png', '.jpg', '.jpeg')
+
+def upload_filename(original, target_dir):
+    # secure_filename drops non-ASCII characters, so sanitise the name and the
+    # extension separately to keep the extension even when the name is lost
+    stem, ext = os.path.splitext(original)
+    stem = werkzeug.utils.secure_filename(stem) or 'photo'
+    ext = ext.lower()
+    filename = stem + ext
+    n = 1
+    while os.path.exists(os.path.join(target_dir, filename)):
+        filename = f"{stem}_{n}{ext}"
+        n += 1
+    return filename
+
 @flask_app.route('/api/upload', methods=['POST'])
 @login_required
 def upload_file_api():
@@ -620,15 +635,14 @@ def upload_file_api():
     if folder not in app_state.available_folders:
         return "Invalid folder", 400
         
-    files = [f for f in request.files.getlist('file') if f and f.filename]
+    files = [f for f in request.files.getlist('file') if f and f.filename.lower().endswith(UPLOAD_EXTENSIONS)]
     if not files:
         return "No file", 400
 
     target_dir = os.path.join(app_state.galleries_dir, folder)
     os.makedirs(target_dir, exist_ok=True)
     for file in files:
-        filename = werkzeug.utils.secure_filename(file.filename)
-        file.save(os.path.join(target_dir, filename))
+        file.save(os.path.join(target_dir, upload_filename(file.filename, target_dir)))
 
     if app_state.current_folder == folder:
         app_state.refresh_images()
