@@ -52,14 +52,20 @@ class AppState:
                 pass
 
     def save_settings(self):
-        with open(settings_path, "w") as f:
+        # Write to a temp file and swap it in, so a power cut mid-save
+        # can't leave a truncated settings file (which would reset the password)
+        tmp_path = settings_path + ".tmp"
+        with open(tmp_path, "w") as f:
             json.dump({
-                "duration": self.display_duration, 
-                "random": self.random_order, 
+                "duration": self.display_duration,
+                "random": self.random_order,
                 "folder": self.current_folder,
                 "transition": self.transition_type,
                 "web_password": self.web_password_hash
             }, f)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, settings_path)
             
     def refresh_folders(self):
         valid_folders = []
