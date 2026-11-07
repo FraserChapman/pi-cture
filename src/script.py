@@ -118,11 +118,7 @@ try:
             app_state.refresh_images()
             app_state.current_index = 0
             if app_state.mode == "SLIDESHOW":
-                if app_state.images:
-                    show_image(app_state.current_index, transition="cut")
-                else:
-                    screen.fill((0, 0, 0))
-                    pygame.display.flip()
+                show_image(app_state.current_index, transition="cut")
                 app_state.last_change_time = time.time()
             else:
                 draw_menu(screen, font, width, height, app_state)
@@ -142,11 +138,7 @@ try:
                 if app_state.current_index >= len(app_state.images):
                     app_state.current_index = 0
                 if app_state.mode == "SLIDESHOW":
-                    if app_state.images:
-                        show_image(app_state.current_index, transition="cut")
-                    else:
-                        screen.fill((0, 0, 0))
-                        pygame.display.flip()
+                    show_image(app_state.current_index, transition="cut")
             app_state.web_action = None
 
         for event in pygame.event.get():
@@ -200,11 +192,7 @@ try:
                         draw_menu(screen, font, width, height, app_state)
                     elif 300 <= real_y <= 370:
                         app_state.mode = "SLIDESHOW"
-                        if app_state.images:
-                            show_image(app_state.current_index, transition="cut")
-                        else:
-                            screen.fill((0, 0, 0))
-                            pygame.display.flip()
+                        show_image(app_state.current_index, transition="cut")
                         app_state.last_change_time = time.time()
                     elif 370 <= real_y <= 450:
                         pygame.quit()
