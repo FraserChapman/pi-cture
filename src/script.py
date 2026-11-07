@@ -10,7 +10,7 @@ def log_error(msg):
 
 try:
     import pygame
-    from state import AppState
+    from state import AppState, DURATIONS, TRANSITIONS
     from menu import draw_menu
     from web import start_web_server
 
@@ -177,10 +177,8 @@ try:
                             pygame.event.clear()
                 elif app_state.mode == "MENU":
                     if 20 <= real_y <= 90:
-                        if app_state.display_duration == 5: app_state.display_duration = 10
-                        elif app_state.display_duration == 10: app_state.display_duration = 30
-                        elif app_state.display_duration == 30: app_state.display_duration = 60
-                        else: app_state.display_duration = 5
+                        d_idx = DURATIONS.index(app_state.display_duration) if app_state.display_duration in DURATIONS else -1
+                        app_state.display_duration = DURATIONS[(d_idx + 1) % len(DURATIONS)]
                         app_state.save_settings()
                         draw_menu(screen, font, width, height, app_state)
                     elif 90 <= real_y <= 160:
@@ -196,9 +194,8 @@ try:
                             app_state.save_settings()
                         draw_menu(screen, font, width, height, app_state)
                     elif 230 <= real_y <= 300:
-                        transitions = ["cut", "fade", "slide"]
-                        t_idx = transitions.index(app_state.transition_type)
-                        app_state.transition_type = transitions[(t_idx + 1) % len(transitions)]
+                        t_idx = TRANSITIONS.index(app_state.transition_type)
+                        app_state.transition_type = TRANSITIONS[(t_idx + 1) % len(TRANSITIONS)]
                         app_state.save_settings()
                         draw_menu(screen, font, width, height, app_state)
                     elif 300 <= real_y <= 370:
