@@ -33,6 +33,23 @@ sudo ./install.sh --port 8080
 
 Once installed, the service takes over `tty1` and starts automatically every time you boot the Pi. Cold boots are fully supported - the display driver will power up the screen naturally.
 
+## Uninstallation
+
+To remove the service and undo the boot configuration changes made by the installer:
+
+```bash
+sudo ./uninstall.sh
+sudo reboot
+```
+
+Installed packages are left in place by default. Append `packages` to also remove `cage`, `python3-pygame`, `python3-flask` and `python3-werkzeug`, and `tailscale` to log out of and remove Tailscale:
+
+```bash
+sudo ./uninstall.sh packages tailscale
+```
+
+Your photos and settings are kept; delete the `pi·cture` directory afterwards if you no longer need them.
+
 ## Physical Touch Interface
 
 You can use the physical touch screen to control the slideshow:
