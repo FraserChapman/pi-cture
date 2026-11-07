@@ -9,6 +9,9 @@ base_dir = os.path.dirname(script_dir)
 settings_path = os.path.join(base_dir, "settings.json")
 galleries_dir = os.path.join(base_dir, "galleries")
 
+DURATIONS = (5, 10, 30, 60)
+TRANSITIONS = ("cut", "fade", "slide")
+
 class AppState:
     def __init__(self):
         self.display_duration = 10
@@ -36,10 +39,12 @@ class AppState:
             try:
                 with open(settings_path, "r") as f:
                     data = json.load(f)
-                    self.display_duration = data.get("duration", 10)
+                    duration = data.get("duration", 10)
+                    self.display_duration = duration if duration in DURATIONS else 10
                     self.random_order = data.get("random", False)
                     self.current_folder = data.get("folder", "images")
-                    self.transition_type = data.get("transition", "cut")
+                    transition = data.get("transition", "cut")
+                    self.transition_type = transition if transition in TRANSITIONS else "cut"
                     loaded_pwd = data.get("web_password")
                     if loaded_pwd:
                         if loaded_pwd.startswith("scrypt:") or loaded_pwd.startswith("pbkdf2:"):

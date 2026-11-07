@@ -4,6 +4,7 @@ import os
 import tempfile
 import unittest
 from contextlib import contextmanager
+from unittest import mock
 
 # Add src to python path so we can import our modules
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'src'))
@@ -61,6 +62,34 @@ class WebUITestCase(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertIn(b'Save Settings', resp.data)
         
+    def test_settings_rejects_invalid_values(self):
+        self.login()
+        app_state = web.app_state
+        before = (app_state.display_duration, app_state.transition_type, app_state.random_order)
+
+        for data in [
+            {'duration': 'abc', 'transition': 'cut'},
+            {'duration': '7', 'transition': 'cut'},
+            {'duration': '10', 'transition': 'spin'},
+        ]:
+            resp = self.client.post('/api/settings', data=dict(data, random='true'))
+            self.assertEqual(resp.status_code, 400, data)
+
+        self.assertEqual((app_state.display_duration, app_state.transition_type, app_state.random_order), before)
+
+    def test_settings_saves_valid_values(self):
+        self.login()
+        app_state = web.app_state
+        before = (app_state.display_duration, app_state.transition_type)
+        with tempfile.TemporaryDirectory() as tmp, \
+                mock.patch.object(state, 'settings_path', os.path.join(tmp, 'settings.json')):
+            try:
+                resp = self.client.post('/api/settings', data={'duration': '60', 'transition': 'fade'})
+                self.assertEqual(resp.status_code, 200)
+                self.assertEqual((app_state.display_duration, app_state.transition_type), (60, 'fade'))
+            finally:
+                app_state.display_duration, app_state.transition_type = before
+
     def test_tailscale_widget_renders(self):
         with self.client.session_transaction() as sess:
             sess['authenticated'] = True

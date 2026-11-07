@@ -7,6 +7,7 @@ from flask import Flask, request, redirect, url_for, render_template_string, sen
 import werkzeug.utils
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
+from state import DURATIONS, TRANSITIONS
 
 flask_app = Flask(__name__)
 flask_app.secret_key = os.urandom(24)
@@ -547,7 +548,19 @@ def gallery_grid():
 @flask_app.route('/api/settings', methods=['POST'])
 @login_required
 def update_settings_api():
-    app_state.display_duration = int(request.form.get('duration', app_state.display_duration))
+    # Validate everything before changing anything, so a bad request can't half-apply
+    try:
+        duration = int(request.form.get('duration', app_state.display_duration))
+    except ValueError:
+        return "Invalid duration", 400
+    if duration not in DURATIONS:
+        return "Invalid duration", 400
+    transition = request.form.get('transition', app_state.transition_type)
+    if transition not in TRANSITIONS:
+        return "Invalid transition", 400
+
+    app_state.display_duration = duration
+    app_state.transition_type = transition
     app_state.random_order = request.form.get('random') == 'true'
     
     new_pwd = request.form.get('web_password')
@@ -555,7 +568,6 @@ def update_settings_api():
         app_state.web_password_hash = generate_password_hash(new_pwd)
     
     new_folder = request.form.get('folder', app_state.current_folder)
-    app_state.transition_type = request.form.get('transition', app_state.transition_type)
     
     if new_folder != app_state.current_folder and new_folder in app_state.available_folders:
         app_state.current_folder = new_folder

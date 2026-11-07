@@ -44,5 +44,14 @@ class SaveSettingsTestCase(unittest.TestCase):
         with open(self.path) as f:
             self.assertEqual(json.load(f)["duration"], 30)
 
+    def test_invalid_saved_values_fall_back_to_defaults(self):
+        with open(self.path, "w") as f:
+            json.dump({"duration": 7, "transition": "spin", "folder": "images"}, f)
+
+        self.app_state.load_settings()
+
+        self.assertEqual(self.app_state.display_duration, 10)
+        self.assertEqual(self.app_state.transition_type, "cut")
+
 if __name__ == '__main__':
     unittest.main()
