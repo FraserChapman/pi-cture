@@ -11,6 +11,7 @@ galleries_dir = os.path.join(base_dir, "galleries")
 
 DURATIONS = (5, 10, 30, 60)
 TRANSITIONS = ("cut", "fade", "slide")
+IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg")
 
 class AppState:
     def __init__(self):
@@ -99,7 +100,7 @@ class AppState:
         if not os.path.exists(d):
             self.images = []
         else:
-            self.images = sorted([os.path.join(d, f) for f in os.listdir(d) if f.lower().endswith(('.png', '.jpg', '.jpeg'))])
+            self.images = sorted([os.path.join(d, f) for f in os.listdir(d) if f.lower().endswith(IMAGE_EXTENSIONS)])
             
     def get_next_index(self):
         if not self.images: return 0

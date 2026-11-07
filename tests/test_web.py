@@ -150,6 +150,15 @@ class WebUITestCase(unittest.TestCase):
             self.assertIn('id="upload-folder-input" value="holiday"', html)
             self.assertEqual(web.app_state.current_folder, 'images')
 
+    def test_delete_count_ignores_unsupported_files(self):
+        self.login()
+        with self.temp_galleries() as tmp:
+            for name in ('a.jpg', 'b.jpg', 'c.bmp'):
+                open(os.path.join(tmp, 'images', name), 'wb').close()
+
+            resp = self.client.delete('/api/image/images/a.jpg')
+            self.assertIn(b'Photos (1)', resp.data)
+
     def test_filenames_are_escaped_in_grid(self):
         self.login()
         with self.temp_galleries() as tmp:

@@ -7,7 +7,7 @@ from flask import Flask, request, redirect, url_for, render_template_string, sen
 import werkzeug.utils
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-from state import DURATIONS, TRANSITIONS
+from state import DURATIONS, TRANSITIONS, IMAGE_EXTENSIONS
 
 flask_app = Flask(__name__)
 flask_app.secret_key = os.urandom(24)
@@ -339,7 +339,7 @@ def ui_gallery(selected_folder=None):
     d = os.path.join(app_state.galleries_dir, selected_folder)
     count = 0
     if os.path.exists(d):
-        count = len([f for f in os.listdir(d) if f.lower().endswith(('.png', '.jpg', '.jpeg'))])
+        count = len([f for f in os.listdir(d) if f.lower().endswith(IMAGE_EXTENSIONS)])
         
     html = f"""
     <div class="uk-grid-small" uk-grid>
@@ -457,7 +457,7 @@ def gallery_grid():
     if not os.path.exists(d):
         return f"<h3 class='uk-margin-remove' id='gallery-photo-count' hx-swap-oob='true'>Photos (0)</h3><div class='uk-alert uk-alert-warning'>Folder not found.</div>"
 
-    images = sorted([f for f in os.listdir(d) if f.lower().endswith(('.png', '.jpg', '.jpeg'))])
+    images = sorted([f for f in os.listdir(d) if f.lower().endswith(IMAGE_EXTENSIONS)])
     total_images = len(images)
     
     html = f"<h3 class='uk-margin-remove' id='gallery-photo-count' hx-swap-oob='true'>Photos ({total_images})</h3>"
@@ -625,8 +625,6 @@ def api_action():
     resp.headers['HX-Trigger'] = json.dumps({"notify": f"{app_state.web_action} action sent to display"})
     return resp
 
-UPLOAD_EXTENSIONS = ('.png', '.jpg', '.jpeg')
-
 def upload_filename(original, target_dir):
     # secure_filename drops non-ASCII characters, so sanitise the name and the
     # extension separately to keep the extension even when the name is lost
@@ -647,7 +645,7 @@ def upload_file_api():
     if folder not in app_state.available_folders:
         return "Invalid folder", 400
         
-    files = [f for f in request.files.getlist('file') if f and f.filename.lower().endswith(UPLOAD_EXTENSIONS)]
+    files = [f for f in request.files.getlist('file') if f and f.filename.lower().endswith(IMAGE_EXTENSIONS)]
     if not files:
         return "No file", 400
 
@@ -689,7 +687,7 @@ def delete_image_file(folder, filename):
         if app_state.current_folder == folder:
             app_state.refresh_images()
             app_state.web_action = 'reload'
-        images = [f for f in os.listdir(os.path.join(app_state.galleries_dir, folder)) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp'))]
+        images = [f for f in os.listdir(os.path.join(app_state.galleries_dir, folder)) if f.lower().endswith(IMAGE_EXTENSIONS)]
         total = len(images)
         return f"<h3 class='uk-margin-remove' id='gallery-photo-count' hx-swap-oob='true'>Photos ({total})</h3>"
     return "Not found", 404
