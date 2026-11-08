@@ -56,7 +56,7 @@ You can use the physical touch screen to control the slideshow:
 
 - **Tap the left half of the screen:** Go to the previous image.
 - **Tap the right half of the screen:** Go to the next image.
-- **Long-press anywhere (1+ seconds):** Open the on-screen menu to set the a gallery, duration, order, transition, or safely shutdown the Pi.
+- **Long-press anywhere (1+ seconds):** Open the on-screen menu to set the gallery, duration, order, transition, or safely shutdown the Pi.
 
 ### On-screen Menu
 
@@ -64,7 +64,7 @@ You can use the physical touch screen to control the slideshow:
 
 ## Web Interface Dashboard
 
-The photo frame runs a sleek local web server on port 5000 (or whichever port you specified during install). It allows you to effortlessly manage your photo frame from the couch or from the other side of the world.
+The photo frame runs a local web server on port 5000 (or whichever port you specified during install). It allows you to effortlessly manage your photo frame from the couch or from the other side of the world.
 
 To access the dashboard:
 1. Open a browser on your phone or computer.
