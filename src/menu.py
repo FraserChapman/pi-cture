@@ -12,6 +12,7 @@ GREEN = (100, 255, 100)
 RED = (255, 100, 100)
 BUTTON = (55, 55, 55)
 BUTTON_PRESSED = (110, 110, 110)
+BUTTON_WARNING = (140, 30, 30)
 
 def row_height(height):
     return height // len(MENU_ITEMS)
@@ -22,7 +23,7 @@ def menu_item_at(y, height):
         return MENU_ITEMS[row]
     return None
 
-def draw_menu(screen, font, width, height, app_state, highlight=None):
+def draw_menu(screen, font, width, height, app_state, highlight=None, confirm_shutdown=False):
     menu_surface = pygame.Surface((width, height), pygame.SRCALPHA)
     menu_surface.fill((0, 0, 0, 220))
 
@@ -33,14 +34,20 @@ def draw_menu(screen, font, width, height, app_state, highlight=None):
         "folder": (f"Folder: {app_state.current_folder}", WHITE),
         "transition": (f"Transition: {app_state.transition_type.title()}", WHITE),
         "close": ("Close Menu", GREEN),
-        "shutdown": ("Shutdown Pi", RED),
+        "shutdown": ("Tap again to shut down" if confirm_shutdown else "Shutdown Pi",
+                     WHITE if confirm_shutdown else RED),
     }
 
     row_h = row_height(height)
     for row, item in enumerate(MENU_ITEMS):
         box = pygame.Rect(SIDE_MARGIN, row * row_h + ROW_GAP // 2,
                           width - 2 * SIDE_MARGIN, row_h - ROW_GAP)
-        colour = BUTTON_PRESSED if item == highlight else BUTTON
+        if item == highlight:
+            colour = BUTTON_PRESSED
+        elif item == "shutdown" and confirm_shutdown:
+            colour = BUTTON_WARNING
+        else:
+            colour = BUTTON
         pygame.draw.rect(menu_surface, colour, box, border_radius=10)
 
         text, text_colour = labels[item]

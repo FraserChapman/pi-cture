@@ -39,15 +39,18 @@ try:
     app_state = AppState()
     start_web_server(app_state)
     touch_start_time = 0
+    shutdown_armed_until = 0
 
 except Exception as e:
     log_error(traceback.format_exc())
     sys.exit(1)
 
+SHUTDOWN_CONFIRM_SECONDS = 3
 TAP_FLASH_MS = 150
 
 def redraw_menu(highlight=None):
-    draw_menu(screen, font, width, height, app_state, highlight)
+    confirm_shutdown = time.time() < shutdown_armed_until
+    draw_menu(screen, font, width, height, app_state, highlight, confirm_shutdown)
 
 def flash_menu_row(item):
     # Briefly show the tapped row as pressed so the tap is obvious
@@ -180,6 +183,8 @@ try:
                             pygame.event.clear()
                 elif app_state.mode == "MENU":
                     item = menu_item_at(real_y, height)
+                    if item != "shutdown":
+                        shutdown_armed_until = 0
                     if item == "duration":
                         d_idx = DURATIONS.index(app_state.display_duration) if app_state.display_duration in DURATIONS else -1
                         app_state.display_duration = DURATIONS[(d_idx + 1) % len(DURATIONS)]
@@ -208,12 +213,21 @@ try:
                         show_image(app_state.current_index, transition="cut")
                         app_state.last_change_time = time.time()
                     elif item == "shutdown":
-                        pygame.quit()
-                        subprocess.run(["sudo", "poweroff"])
-                        sys.exit()
+                        # Needs a second tap, so a stray touch can't power it off
+                        if time.time() < shutdown_armed_until:
+                            pygame.quit()
+                            subprocess.run(["sudo", "poweroff"])
+                            sys.exit()
+                        shutdown_armed_until = time.time() + SHUTDOWN_CONFIRM_SECONDS
+                        redraw_menu()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     running = False
+
+        if shutdown_armed_until and time.time() >= shutdown_armed_until:
+            shutdown_armed_until = 0
+            if app_state.mode == "MENU":
+                redraw_menu()
 
         if app_state.mode == "SLIDESHOW":
             if time.time() - app_state.last_change_time > app_state.display_duration and app_state.images:
