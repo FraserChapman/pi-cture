@@ -58,6 +58,10 @@ You can use the physical touch screen to control the slideshow:
 - **Tap the right half of the screen:** Go to the next image.
 - **Long-press anywhere (1+ seconds):** Open the on-screen menu to set the a gallery, duration, order, transition, or safely shutdown the Pi.
 
+### On-screen Menu
+
+![On-screen menu with duration, order, folder, transition, close and shutdown buttons](assets/screen-menu.png)
+
 ## Web Interface Dashboard
 
 The photo frame runs a sleek local web server on port 5000 (or whichever port you specified during install). It allows you to effortlessly manage your photo frame from the couch or from the other side of the world.
@@ -66,6 +70,18 @@ To access the dashboard:
 1. Open a browser on your phone or computer.
 2. Go to: `http://<your-raspberry-pi-ip>:5000` (or `http://<hostname>:5000`).
 3. Log in with the default password: **`admin`**
+
+### Gallery
+
+![Gallery tab showing gallery controls, the upload button and a grid of photo thumbnails](assets/web-gallery.png)
+
+### Controls
+
+![Controls tab with previous, reload and next buttons](assets/web-controls.png)
+
+### Settings
+
+![Settings tab with duration, order, folder, transition and password fields, and the Tailscale status panel](assets/web-settings.png)
 
 ### Features:
 - **Galleries:** Create infinite custom folders (e.g., "Vacation", "Family") and upload photos in bulk using the drag-and-drop uploader.
