@@ -23,6 +23,7 @@ LOGIN_HTML = """<!DOCTYPE html>
     <link rel="stylesheet" href="/static/style.css" />
     <script src="/static/uikit.min.js"></script>
     <script src="/static/uikit-icons.min.js"></script>
+    <link rel="shortcut icon" type="image/x-icon" href='/static/favicon.ico' />
 </head>
 <body class="uk-flex uk-flex-middle uk-flex-center login-page">
     <div class="uk-card uk-card-default uk-card-body login-card">
@@ -83,6 +84,7 @@ MAIN_HTML = """
     <script src="/static/uikit.min.js"></script>
     <script src="/static/uikit-icons.min.js"></script>
     <script src="/static/htmx.min.js"></script>
+    <link rel="shortcut icon" type="image/x-icon" href='/static/favicon.ico' />
 </head>
 <body>
     <nav class="uk-navbar-container" uk-navbar>
