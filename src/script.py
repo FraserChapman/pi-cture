@@ -44,6 +44,17 @@ except Exception as e:
     log_error(traceback.format_exc())
     sys.exit(1)
 
+TAP_FLASH_MS = 150
+
+def redraw_menu(highlight=None):
+    draw_menu(screen, font, width, height, app_state, highlight)
+
+def flash_menu_row(item):
+    # Briefly show the tapped row as pressed so the tap is obvious
+    redraw_menu(highlight=item)
+    pygame.time.wait(TAP_FLASH_MS)
+    redraw_menu()
+
 def show_image(index, transition="cut"):
     if not app_state.images:
         screen.fill((0, 0, 0))
@@ -121,7 +132,7 @@ try:
                 show_image(app_state.current_index, transition="cut")
                 app_state.last_change_time = time.time()
             else:
-                draw_menu(screen, font, width, height, app_state)
+                redraw_menu()
             app_state.web_settings_updated = False
             
         if app_state.web_action:
@@ -156,7 +167,7 @@ try:
                     if press_duration > 1.0:
                         app_state.refresh_folders()
                         app_state.mode = "MENU"
-                        draw_menu(screen, font, width, height, app_state)
+                        redraw_menu()
                     else:
                         if app_state.images:
                             if real_x < width // 2:
@@ -168,16 +179,16 @@ try:
                             
                             pygame.event.clear()
                 elif app_state.mode == "MENU":
-                    item = menu_item_at(real_y)
+                    item = menu_item_at(real_y, height)
                     if item == "duration":
                         d_idx = DURATIONS.index(app_state.display_duration) if app_state.display_duration in DURATIONS else -1
                         app_state.display_duration = DURATIONS[(d_idx + 1) % len(DURATIONS)]
                         app_state.save_settings()
-                        draw_menu(screen, font, width, height, app_state)
+                        flash_menu_row(item)
                     elif item == "order":
                         app_state.random_order = not app_state.random_order
                         app_state.save_settings()
-                        draw_menu(screen, font, width, height, app_state)
+                        flash_menu_row(item)
                     elif item == "folder":
                         if app_state.available_folders:
                             f_idx = app_state.available_folders.index(app_state.current_folder)
@@ -185,13 +196,14 @@ try:
                             app_state.refresh_images()
                             app_state.current_index = 0
                             app_state.save_settings()
-                        draw_menu(screen, font, width, height, app_state)
+                        flash_menu_row(item)
                     elif item == "transition":
                         t_idx = TRANSITIONS.index(app_state.transition_type)
                         app_state.transition_type = TRANSITIONS[(t_idx + 1) % len(TRANSITIONS)]
                         app_state.save_settings()
-                        draw_menu(screen, font, width, height, app_state)
+                        flash_menu_row(item)
                     elif item == "close":
+                        flash_menu_row(item)
                         app_state.mode = "SLIDESHOW"
                         show_image(app_state.current_index, transition="cut")
                         app_state.last_change_time = time.time()
