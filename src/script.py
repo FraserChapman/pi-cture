@@ -11,7 +11,7 @@ def log_error(msg):
 try:
     import pygame
     from state import AppState, DURATIONS, TRANSITIONS
-    from menu import draw_menu
+    from menu import draw_menu, menu_item_at
     from web import start_web_server
 
     os.environ["SDL_VIDEODRIVER"] = "wayland"
@@ -168,16 +168,17 @@ try:
                             
                             pygame.event.clear()
                 elif app_state.mode == "MENU":
-                    if 20 <= real_y <= 90:
+                    item = menu_item_at(real_y)
+                    if item == "duration":
                         d_idx = DURATIONS.index(app_state.display_duration) if app_state.display_duration in DURATIONS else -1
                         app_state.display_duration = DURATIONS[(d_idx + 1) % len(DURATIONS)]
                         app_state.save_settings()
                         draw_menu(screen, font, width, height, app_state)
-                    elif 90 <= real_y <= 160:
+                    elif item == "order":
                         app_state.random_order = not app_state.random_order
                         app_state.save_settings()
                         draw_menu(screen, font, width, height, app_state)
-                    elif 160 <= real_y <= 230:
+                    elif item == "folder":
                         if app_state.available_folders:
                             f_idx = app_state.available_folders.index(app_state.current_folder)
                             app_state.current_folder = app_state.available_folders[(f_idx + 1) % len(app_state.available_folders)]
@@ -185,16 +186,16 @@ try:
                             app_state.current_index = 0
                             app_state.save_settings()
                         draw_menu(screen, font, width, height, app_state)
-                    elif 230 <= real_y <= 300:
+                    elif item == "transition":
                         t_idx = TRANSITIONS.index(app_state.transition_type)
                         app_state.transition_type = TRANSITIONS[(t_idx + 1) % len(TRANSITIONS)]
                         app_state.save_settings()
                         draw_menu(screen, font, width, height, app_state)
-                    elif 300 <= real_y <= 370:
+                    elif item == "close":
                         app_state.mode = "SLIDESHOW"
                         show_image(app_state.current_index, transition="cut")
                         app_state.last_change_time = time.time()
-                    elif 370 <= real_y <= 450:
+                    elif item == "shutdown":
                         pygame.quit()
                         subprocess.run(["sudo", "poweroff"])
                         sys.exit()
